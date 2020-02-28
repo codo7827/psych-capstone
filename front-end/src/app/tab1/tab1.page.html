@@ -10,9 +10,8 @@
   <div *ngIf="task == null" style="color: white; text-align:center">
 
     <!--Start screen-->
-    <div *ngIf="stage == Stage.START" style="margin-top: 140px">
-      <h1>Ready for training?</h1>
-      <h4>For best results, please give yourself 10 minutes where you can study uninterrupted.</h4>
+    <div *ngIf="stage == Stage.START" style="margin-top: 180px">
+      <h1>Ready?</h1>
       <ion-button color="success" (click)="task = Task.LEARNING">Start</ion-button>
     </div>
 

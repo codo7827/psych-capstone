@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, ViewChildren } from '@angular/core';
+import { Tab1Page } from '../tab1/tab1.page';
 
 @Component({
   selector: 'app-tabs',
@@ -6,7 +7,19 @@ import { Component } from '@angular/core';
   styleUrls: ['tabs.page.scss']
 })
 export class TabsPage {
+  @ViewChildren('tab1') tabRef: Tab1Page;
 
   constructor() {}
 
+  ngAfterViewInit() {
+    this.viewReady = true;
+  }
+
+  viewReady : boolean = false;
+  
+  inTraining() {
+    if (this.viewReady) {
+      return this.tabRef.stage != this.tabRef.Stage.START && this.tabRef.stage != this.tabRef.Stage.DONE;
+    }
+  }
 }
