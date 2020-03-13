@@ -4,7 +4,8 @@ import { AlertController } from '@ionic/angular';
 const helpMessages = {
   start: ["Start", "Welcome to your daily training.\nPlease give yourself about 10 minutes to complete the tasks. You won't be able to access other parts of the app until you have finished. Click to start the learning task."],
   trainingTasks: ["Training Tasks", "Here is a list of the training tasks you still need to complete today.\nYou can do them in any order you like.\nYou must earn a score of at least 6/8 on each to progress to the assessment tasks."],
-  assessmentTasks: ["Assessment Tasks", "Here are your assessment tasks for the day.\nThese will test how much you learned this session, and will be how your progress is tracked."],
+  preAssessmentTasks: ["Pre-Assessment", "Here are your pre-assessment tasks for the day.\nThese will give us a baseline for your current recognition abilities."],
+  postAssessmentTasks: ["Post-Assessment", "Here are your post assessment tasks for the day.\nThese will test how much you learned this session, and will be how your progress is tracked."],
   done: ["Finish", "You're done today. Come back tomorrow for your next training.\nYou can see your progress under the history tab."],
   learning: ["Meet Today's Faces", "Memorize these faces and their names.\nYou will use them in the next tasks."],
   nameAndFace: ["Name and Face", "Select the name that goes to the face.\nThe names are shuffled after each selection."],
@@ -15,7 +16,7 @@ const helpMessages = {
   sameDifferent: ["Same-Different", "You will be shown one face and then another, and you will decide whether they are the same."]
 }
 
-enum Stage { LOGIN, START, TRAINING, ASSESSMENT, DONE }
+enum Stage { LOGIN, START, TRAINING, PRE_ASSESSMENT, POST_ASSESSMENT, DONE }
 enum Task { LEARNING, NAME_FACE, WHOS_NEW, MEMORY, SHUFFLE, FORCED_CHOICE, SAME_DIFFERENT }
 
 @Component({
@@ -52,7 +53,7 @@ export class Tab1Page {
 
   loggedIn : boolean = false;
   learningDone : boolean = false;
-  scores : number[] = [-1, -1, -1, -1, -1, -1];
+  scores : number[] = [-1, -1, -1, -1, -1, -1, -1, -1];
 
   //Just icons
   assessment_icon : string = "assets/icon/assessment.svg";
@@ -63,12 +64,17 @@ export class Tab1Page {
     this.task = null;
     if (!this.loggedIn) {
       this.stage = Stage.LOGIN;
-    } else if (!this.learningDone) {
+    } else if (this.scores[0] == -1 && this.scores[1] == -1) {
       this.stage = Stage.START;
-    } else if (this.scores[0] < 6 || this.scores[1] < 6 || this.scores[2] < 6 || this.scores[3] < 6) {
+    } else if (this.scores[0] == -1 || this.scores[1] == -1) {
+      this.stage = Stage.PRE_ASSESSMENT;
+    } else if (this.scores[1] < 6 || this.scores[2] < 6 || this.scores[3] < 6 || this.scores[4] < 6) {
       this.stage = Stage.TRAINING;
+      if (!this.learningDone) {
+        this.task = Task.LEARNING;
+      }
     } else if (this.scores.includes(-1)) {
-      this.stage = Stage.ASSESSMENT;
+      this.stage = Stage.POST_ASSESSMENT;
     } else {
       this.stage = Stage.DONE;
     }
@@ -81,10 +87,12 @@ export class Tab1Page {
           switch (this.stage) {
             case Stage.START:
               return helpMessages['start'][title];
+            case Stage.PRE_ASSESSMENT:
+              return helpMessages['preAssessmentTasks'][title];
             case Stage.TRAINING:
               return helpMessages['trainingTasks'][title];
-            case Stage.ASSESSMENT:
-              return helpMessages['assessmentTasks'][title];
+            case Stage.POST_ASSESSMENT:
+              return helpMessages['postAssessmentTasks'][title];
             case Stage.DONE:
               return helpMessages['done'][title];
             default:
@@ -159,10 +167,10 @@ export class Tab1Page {
   }
 
   finished(score : number, task : number) {
+    if (this.stage == Stage.PRE_ASSESSMENT) {
+      task -= 6;
+    }
     this.scores[task] = Math.max(score, this.scores[task]);
     this.task = null;
-    if (score > 3) {
-      this.iterateStage();
-    }
   }
 }
